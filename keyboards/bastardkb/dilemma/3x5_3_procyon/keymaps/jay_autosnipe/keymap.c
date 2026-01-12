@@ -151,6 +151,11 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 #include "timer.h"
 #include "print.h"
 
+// Enable debug mode for console output
+void keyboard_post_init_user(void) {
+    debug_enable = true;
+}
+
 // Time in ms to discard movement after CPI change
 #define CPI_CHANGE_DISCARD_MS 100
 static uint16_t g_cpi_change_time = 0;

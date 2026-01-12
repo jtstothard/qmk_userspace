@@ -155,30 +155,39 @@ void keyboard_post_init_user(void) {
     debug_enable = true;
 }
 
-// Number of reports to discard after CPI change
-// Based on debugging: spikes appear randomly in first 20 frames
-// 25 frames = 20 (worst observed) + 5 (safety margin)
-#define CPI_CHANGE_DISCARD_FRAMES 25
-static uint8_t g_cpi_discard_count = 0;
+// Spike detection: find and discard only the first stale CPI delta
+#define SPIKE_THRESHOLD 100           // Magnitude above this is a stale delta
+#define SPIKE_SCAN_FRAMES 100         // Max frames to scan for spike
+static uint16_t g_frames_since_cpi_change = 0;  // Frames to scan
+static bool     g_spike_found = false;           // Whether we've found and discarded the spike
 
 #    ifdef DILEMMA_AUTO_SNIPING_ON_LAYER
 layer_state_t layer_state_set_user(layer_state_t state) {
     bool sniping_enabled = layer_state_cmp(state, DILEMMA_AUTO_SNIPING_ON_LAYER);
-    // Set counter if sniping state changes
+    // Start spike detection when sniping state changes
     if (sniping_enabled != dilemma_get_pointer_sniping_enabled()) {
-        g_cpi_discard_count = CPI_CHANGE_DISCARD_FRAMES;
+        dprintf("CPI changed, scanning for spike...\n");
+        g_frames_since_cpi_change = 0;
+        g_spike_found = false;
     }
     dilemma_set_pointer_sniping_enabled(sniping_enabled);
     return state;
 }
 #    endif // DILEMMA_AUTO_SNIPING_ON_LAYER
 
-// Discard movement reports for N frames after CPI change
+// Detect and discard only the first stale CPI spike after CPI change
 report_mouse_t pointing_device_task_user(report_mouse_t mouse_report) {
-    if (g_cpi_discard_count > 0) {
-        g_cpi_discard_count--;
-        mouse_report.x = 0;
-        mouse_report.y = 0;
+    // Scan up to SPIKE_SCAN_FRAMES after CPI change to find spike
+    if (!g_spike_found && g_frames_since_cpi_change < SPIKE_SCAN_FRAMES) {
+        g_frames_since_cpi_change++;
+        int16_t magnitude = (mouse_report.x < 0 ? -mouse_report.x : mouse_report.x) +
+                          (mouse_report.y < 0 ? -mouse_report.y : mouse_report.y);
+        if (magnitude > SPIKE_THRESHOLD) {
+            dprintf("Found spike at frame %d! mag=%d, discarding\n", g_frames_since_cpi_change, magnitude);
+            g_spike_found = true;
+            mouse_report.x = 0;
+            mouse_report.y = 0;
+        }
     }
     return mouse_report;
 }

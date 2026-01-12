@@ -148,12 +148,30 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 // clang-format on
 
 #ifdef POINTING_DEVICE_ENABLE
+// Flag to track CPI changes - used to prevent cursor jump when entering sniping mode
+static bool g_cpi_changed = false;
+
 #    ifdef DILEMMA_AUTO_SNIPING_ON_LAYER
 layer_state_t layer_state_set_user(layer_state_t state) {
-    dilemma_set_pointer_sniping_enabled(layer_state_cmp(state, DILEMMA_AUTO_SNIPING_ON_LAYER));
+    bool sniping_enabled = layer_state_cmp(state, DILEMMA_AUTO_SNIPING_ON_LAYER);
+    // Only set the flag if the sniping state actually changes
+    if (sniping_enabled != dilemma_get_pointer_sniping_enabled()) {
+        g_cpi_changed = true;
+    }
+    dilemma_set_pointer_sniping_enabled(sniping_enabled);
     return state;
 }
 #    endif // DILEMMA_AUTO_SNIPING_ON_LAYER
+
+// Discard movement report after CPI change to prevent cursor jump
+report_mouse_t pointing_device_task_user(report_mouse_t mouse_report) {
+    if (g_cpi_changed) {
+        g_cpi_changed = false;
+        mouse_report.x = 0;
+        mouse_report.y = 0;
+    }
+    return mouse_report;
+}
 #endif     // POINTING_DEVICE_ENABLE
 
 #ifdef ENCODER_MAP_ENABLE

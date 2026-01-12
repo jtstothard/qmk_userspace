@@ -156,7 +156,7 @@ void keyboard_post_init_user(void) {
 }
 
 // Number of reports to discard after CPI change
-#define CPI_CHANGE_DISCARD_FRAMES 50
+#define CPI_CHANGE_DISCARD_FRAMES 30
 static uint8_t g_cpi_discard_count = 0;
 
 #    ifdef DILEMMA_AUTO_SNIPING_ON_LAYER

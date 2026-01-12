@@ -148,16 +148,12 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 // clang-format on
 
 #ifdef POINTING_DEVICE_ENABLE
-#include "print.h"
-
-// Enable debug mode for console output
-void keyboard_post_init_user(void) {
-    debug_enable = true;
-}
-
 // Spike detection: find and discard only the first stale CPI delta
+// When CPI changes (entering/exiting sniping), the Azoteq sensor may have stale
+// delta values buffered at the old scale, causing cursor jumps. This fix detects
+// and discards only the problematic spike without affecting normal movement.
 #define SPIKE_THRESHOLD 100           // Magnitude above this is a stale delta
-#define SPIKE_SCAN_FRAMES 100         // Max frames to scan for spike
+#define SPIKE_SCAN_FRAMES 150         // Max frames to scan for spike (observed: up to frame 84)
 static uint16_t g_frames_since_cpi_change = 0;  // Frames to scan
 static bool     g_spike_found = false;           // Whether we've found and discarded the spike
 
@@ -166,7 +162,6 @@ layer_state_t layer_state_set_user(layer_state_t state) {
     bool sniping_enabled = layer_state_cmp(state, DILEMMA_AUTO_SNIPING_ON_LAYER);
     // Start spike detection when sniping state changes
     if (sniping_enabled != dilemma_get_pointer_sniping_enabled()) {
-        dprintf("CPI changed, scanning for spike...\n");
         g_frames_since_cpi_change = 0;
         g_spike_found = false;
     }
@@ -183,7 +178,6 @@ report_mouse_t pointing_device_task_user(report_mouse_t mouse_report) {
         int16_t magnitude = (mouse_report.x < 0 ? -mouse_report.x : mouse_report.x) +
                           (mouse_report.y < 0 ? -mouse_report.y : mouse_report.y);
         if (magnitude > SPIKE_THRESHOLD) {
-            dprintf("Found spike at frame %d! mag=%d, discarding\n", g_frames_since_cpi_change, magnitude);
             g_spike_found = true;
             mouse_report.x = 0;
             mouse_report.y = 0;

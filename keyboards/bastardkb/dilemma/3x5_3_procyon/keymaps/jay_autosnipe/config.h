@@ -23,6 +23,3 @@
 #define SPLIT_LED_STATE_ENABLE
 
 #define ENCODER_RESOLUTION 4
-
-// Debug output for pointing device
-#define POINTING_DEVICE_DEBUG

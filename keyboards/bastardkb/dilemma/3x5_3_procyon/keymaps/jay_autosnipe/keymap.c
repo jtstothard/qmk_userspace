@@ -156,22 +156,17 @@ void keyboard_post_init_user(void) {
 }
 
 // Number of reports to discard after CPI change
-#define CPI_CHANGE_DISCARD_FRAMES 50
+// Based on debugging: spikes appear randomly in first 20 frames
+// 25 frames = 20 (worst observed) + 5 (safety margin)
+#define CPI_CHANGE_DISCARD_FRAMES 25
 static uint8_t g_cpi_discard_count = 0;
-
-// Track movement to detect stale CPI deltas
-#define MOVEMENT_SPIKE_THRESHOLD 50  // Values above this are suspicious
-static uint8_t g_cpi_change_frames_to_log = 0;
 
 #    ifdef DILEMMA_AUTO_SNIPING_ON_LAYER
 layer_state_t layer_state_set_user(layer_state_t state) {
     bool sniping_enabled = layer_state_cmp(state, DILEMMA_AUTO_SNIPING_ON_LAYER);
     // Set counter if sniping state changes
     if (sniping_enabled != dilemma_get_pointer_sniping_enabled()) {
-        dprintf("Sniping state changed to: %d\n", sniping_enabled);
         g_cpi_discard_count = CPI_CHANGE_DISCARD_FRAMES;
-        // Log first 20 frames after CPI change to analyze the pattern
-        g_cpi_change_frames_to_log = 20;
     }
     dilemma_set_pointer_sniping_enabled(sniping_enabled);
     return state;
@@ -180,17 +175,6 @@ layer_state_t layer_state_set_user(layer_state_t state) {
 
 // Discard movement reports for N frames after CPI change
 report_mouse_t pointing_device_task_user(report_mouse_t mouse_report) {
-    // Log movement data after CPI change to find problematic frames
-    if (g_cpi_change_frames_to_log > 0) {
-        g_cpi_change_frames_to_log--;
-        int16_t magnitude = (mouse_report.x < 0 ? -mouse_report.x : mouse_report.x) +
-                          (mouse_report.y < 0 ? -mouse_report.y : mouse_report.y);
-        dprintf("Frame[%d] x=%d y=%d mag=%d %s\n",
-            20 - g_cpi_change_frames_to_log,
-            mouse_report.x, mouse_report.y, magnitude,
-            magnitude > MOVEMENT_SPIKE_THRESHOLD ? "SPIKE!" : "");
-    }
-
     if (g_cpi_discard_count > 0) {
         g_cpi_discard_count--;
         mouse_report.x = 0;

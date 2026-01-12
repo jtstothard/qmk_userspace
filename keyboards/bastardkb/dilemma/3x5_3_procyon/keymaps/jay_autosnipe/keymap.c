@@ -155,16 +155,33 @@ void keyboard_post_init_user(void) {
     debug_enable = true;
 }
 
+// Number of reports to discard after CPI change
+#define CPI_CHANGE_DISCARD_FRAMES 50
+static uint8_t g_cpi_discard_count = 0;
+
 #    ifdef DILEMMA_AUTO_SNIPING_ON_LAYER
 layer_state_t layer_state_set_user(layer_state_t state) {
     bool sniping_enabled = layer_state_cmp(state, DILEMMA_AUTO_SNIPING_ON_LAYER);
+    // Set counter if sniping state changes
     if (sniping_enabled != dilemma_get_pointer_sniping_enabled()) {
-        dprintf("Sniping state changed to: %d\n", sniping_enabled);
+        dprintf("Sniping state changed to: %d, discarding next %d reports\n", sniping_enabled, CPI_CHANGE_DISCARD_FRAMES);
+        g_cpi_discard_count = CPI_CHANGE_DISCARD_FRAMES;
     }
     dilemma_set_pointer_sniping_enabled(sniping_enabled);
     return state;
 }
 #    endif // DILEMMA_AUTO_SNIPING_ON_LAYER
+
+// Discard movement reports for N frames after CPI change
+report_mouse_t pointing_device_task_user(report_mouse_t mouse_report) {
+    if (g_cpi_discard_count > 0) {
+        g_cpi_discard_count--;
+        dprintf("Discarding movement, %d reports remaining\n", g_cpi_discard_count);
+        mouse_report.x = 0;
+        mouse_report.y = 0;
+    }
+    return mouse_report;
+}
 #endif // POINTING_DEVICE_ENABLE
 
 #ifdef ENCODER_MAP_ENABLE

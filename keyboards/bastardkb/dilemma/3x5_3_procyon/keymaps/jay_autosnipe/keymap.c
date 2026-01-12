@@ -148,7 +148,6 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 // clang-format on
 
 #ifdef POINTING_DEVICE_ENABLE
-#include "timer.h"
 #include "print.h"
 
 // Enable debug mode for console output
@@ -156,40 +155,16 @@ void keyboard_post_init_user(void) {
     debug_enable = true;
 }
 
-// Time in ms to discard movement after CPI change
-#define CPI_CHANGE_DISCARD_MS 100
-static uint16_t g_cpi_change_time = 0;
-static bool     g_cpi_changed     = false;
-
 #    ifdef DILEMMA_AUTO_SNIPING_ON_LAYER
 layer_state_t layer_state_set_user(layer_state_t state) {
     bool sniping_enabled = layer_state_cmp(state, DILEMMA_AUTO_SNIPING_ON_LAYER);
-    // Set timer if sniping state changes
     if (sniping_enabled != dilemma_get_pointer_sniping_enabled()) {
         dprintf("Sniping state changed to: %d\n", sniping_enabled);
-        g_cpi_change_time = timer_read();
-        g_cpi_changed     = true;
     }
     dilemma_set_pointer_sniping_enabled(sniping_enabled);
     return state;
 }
 #    endif // DILEMMA_AUTO_SNIPING_ON_LAYER
-
-// Discard movement reports for a short time after CPI change
-report_mouse_t pointing_device_task_user(report_mouse_t mouse_report) {
-    if (g_cpi_changed) {
-        uint16_t elapsed = timer_elapsed(g_cpi_change_time);
-        if (elapsed < CPI_CHANGE_DISCARD_MS) {
-            dprintf("Discarding movement, %dms since CPI change\n", elapsed);
-            mouse_report.x = 0;
-            mouse_report.y = 0;
-        } else {
-            dprintf("Discard period ended after %dms\n", elapsed);
-            g_cpi_changed = false;
-        }
-    }
-    return mouse_report;
-}
 #endif // POINTING_DEVICE_ENABLE
 
 #ifdef ENCODER_MAP_ENABLE

@@ -10,12 +10,11 @@ jobs:
     name: 'QMK Userspace Build'
     uses: qmk/.github/.github/workflows/qmk_userspace_build.yml@main
     with:
-      qmk_repo: jtstothard/bastardkb-qmk
-      qmk_ref: test-dilemma-cpi-cursor-jump
+      qmk_repo: bastardkb/bastardkb-qmk
+      qmk_ref: bkb-develop
 
   publish:
     name: 'QMK Userspace Publish'
     uses: bastardkb/qmk_userspace/.github/workflows/qmk_userspace_publish_develop.yml@develop
     if: always() && !cancelled()
     needs: build
-# Trigger rebuild with jay_autosnipe keymap

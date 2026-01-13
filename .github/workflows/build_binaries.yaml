@@ -18,3 +18,4 @@ jobs:
     uses: bastardkb/qmk_userspace/.github/workflows/qmk_userspace_publish_develop.yml@develop
     if: always() && !cancelled()
     needs: build
+# Trigger rebuild with jay_autosnipe keymap

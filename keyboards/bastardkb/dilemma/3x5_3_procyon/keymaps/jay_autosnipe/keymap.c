@@ -17,19 +17,18 @@
 
 #include QMK_KEYBOARD_H
 
+/* Automatically enable sniping mode when entering layer 4 (pointer layer) */
+#define DILEMMA_AUTO_SNIPING_ON_LAYER 4
+
 enum dilemma_keymap_layers {
     LAYER_BASE = 0,
     LAYER_NAV,
     LAYER_SYM,
     LAYER_NUM,
-    LAYER_POINTER,
 };
 
 #define NAV QK_TRI_LAYER_LOWER
 #define SYM QK_TRI_LAYER_UPPER
-
-/* Automatically enable sniping mode when entering pointer layer */
-#define DILEMMA_AUTO_SNIPING_ON_LAYER LAYER_POINTER
 
 // clang-format off
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
@@ -80,28 +79,5 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
                          XXXXXXX, _______, KC_LSFT,     KC_SPC, _______, XXXXXXX
   //                   ╰───────────────────────────╯ ╰──────────────────────────╯
   ),
-
-  [LAYER_POINTER] = LAYOUT_split_3x5_3(
-  // ╭─────────────────────────────────────────────╮ ╭─────────────────────────────────────────────╮
-       QK_BOOT,  EE_CLR, XXXXXXX, DPI_MOD, S_D_MOD, S_D_MOD, DPI_MOD, XXXXXXX,  EE_CLR, QK_BOOT,
-  // ├─────────────────────────────────────────────┤ ├─────────────────────────────────────────────┤
-       KC_LGUI, KC_LALT, KC_LCTL, KC_LSFT, XXXXXXX, XXXXXXX, KC_LSFT, KC_LCTL, KC_LALT, KC_LGUI,
-  // ├─────────────────────────────────────────────┤ ├─────────────────────────────────────────────┤
-      _______, DRGSCRL, SNIPING, MS_BTN3, XXXXXXX, XXXXXXX, MS_BTN3, SNIPING, DRGSCRL, _______,
-  // ╰─────────────────────────────────────────────╤ ├─────────────────────────────────────────────╯
-                         MS_BTN3, MS_BTN2, MS_BTN1, MS_BTN1, MS_BTN2, MS_BTN3
-  //                   ╰───────────────────────────╯ ╰──────────────────────────╯
-  ),
 };
 // clang-format on
-
-#ifdef POINTING_DEVICE_ENABLE
-#    ifdef DILEMMA_AUTO_SNIPING_ON_LAYER
-/* Automatically enable sniping mode when entering the pointer layer */
-layer_state_t layer_state_set_user(layer_state_t state) {
-    bool sniping_enabled = layer_state_cmp(state, DILEMMA_AUTO_SNIPING_ON_LAYER);
-    dilemma_set_pointer_sniping_enabled(sniping_enabled);
-    return state;
-}
-#    endif // DILEMMA_AUTO_SNIPING_ON_LAYER
-#endif // POINTING_DEVICE_ENABLE

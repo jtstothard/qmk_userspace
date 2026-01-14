@@ -22,6 +22,9 @@
 #define DILEMMA_AUTO_POINTER_LAYER_TRIGGER_ENABLE
 #define DILEMMA_AUTO_POINTER_LAYER_TRIGGER_TIMEOUT_MS 1000
 
+/* Automatically enable sniping-mode on the pointer layer */
+#define DILEMMA_AUTO_SNIPING_ON_LAYER LAYER_POINTER
+
 enum dilemma_keymap_layers {
     LAYER_BASE = 0,
     LAYER_FUNCTION,

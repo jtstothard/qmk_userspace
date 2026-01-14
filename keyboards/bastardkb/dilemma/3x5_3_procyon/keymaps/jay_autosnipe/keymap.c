@@ -158,6 +158,13 @@ layer_state_t layer_state_set_user(layer_state_t state) {
 #    endif // DILEMMA_AUTO_SNIPING_ON_LAYER
 #endif // POINTING_DEVICE_ENABLE
 
+#ifdef CONSOLE_ENABLE
+void keyboard_post_init_user(void) {
+    debug_enable = true;
+    debug_matrix = true;
+}
+#endif
+
 #ifdef ENCODER_MAP_ENABLE
 // clang-format off
 const uint16_t PROGMEM encoder_map[][NUM_ENCODERS][NUM_DIRECTIONS] = {

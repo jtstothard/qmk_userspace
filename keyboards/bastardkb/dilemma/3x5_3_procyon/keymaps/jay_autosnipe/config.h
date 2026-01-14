@@ -25,4 +25,6 @@
 #define ENCODER_RESOLUTION 4
 
 /* Scroll speed - higher = slower (default: 10) */
-#define DIGITIZER_SCROLL_DIVISOR 20
+/* Note: Affects both drag-scroll and two-finger scroll */
+/* Two-finger scroll needs higher value due to DPI scaling */
+#define DIGITIZER_SCROLL_DIVISOR 100

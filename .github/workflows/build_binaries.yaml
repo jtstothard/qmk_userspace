@@ -9,9 +9,6 @@ jobs:
   build:
     name: 'QMK Userspace Build'
     uses: qmk/.github/.github/workflows/qmk_userspace_build.yml@main
-    with:
-      qmk_repo: jtstothard/bastardkb-qmk
-      qmk_ref: maxtouch-dpi-fix
 
   publish:
     name: 'QMK Userspace Publish'

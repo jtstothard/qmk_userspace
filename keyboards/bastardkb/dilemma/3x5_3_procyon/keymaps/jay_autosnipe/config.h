@@ -23,3 +23,6 @@
 #define SPLIT_LED_STATE_ENABLE
 
 #define ENCODER_RESOLUTION 4
+
+/* Scroll speed - higher = slower (default: 10) */
+#define DIGITIZER_SCROLL_DIVISOR 20

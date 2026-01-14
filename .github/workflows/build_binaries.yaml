@@ -11,7 +11,7 @@ jobs:
     uses: qmk/.github/.github/workflows/qmk_userspace_build.yml@main
     with:
       qmk_repo: jtstothard/bastardkb-qmk
-      qmk_ref: fix/azoteq-cpi-cursor-jump-cirque-style-develop
+      qmk_ref: maxtouch-dpi-fix
 
   publish:
     name: 'QMK Userspace Publish'
